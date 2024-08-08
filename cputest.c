@@ -273,7 +273,7 @@ void printASCIILogPointGraph(float* results, int count) {
     #endif
 
     printf("MFLOPS Performance Graph (Log2 Scale)\n");
-    printf("Range: %.2f (2^%.2f) - %.2f (2^%.2f) MFLOPS\n", min, log_min, max, log_max);
+    printf("Range: %.0f (2^%.2f) - %.0f (2^%.2f) MFLOPS\n", min, log_min, max, log_max);
 
     char graph[GRAPH_HEIGHT][GRAPH_WIDTH];
     for (int y = 0; y < GRAPH_HEIGHT; y++) {
@@ -321,9 +321,20 @@ void printASCIILogPointGraph(float* results, int count) {
 }
 
 int main() {
-    int testCount;
-    printf("Enter number of test runs (20+ for stability verification)\n");
+    int testCount, sleep;
+    printf("Select test:\n1) Benchmark\n2) Stress Test\n3) Stability Verification\n");
     scanf("%d", &testCount);
+
+    if(testCount == 1) {
+        sleep = 5000;
+        testCount = 22;
+    } else if(testCount == 2) {
+        sleep = 10000;
+        testCount = 52;
+    } else {
+        sleep = 60000;
+        testCount = 102;
+    }
     float *testResults = malloc(testCount * sizeof(float));
     float *perfData = malloc(testCount * sizeof(float));
 
@@ -377,8 +388,8 @@ int main() {
             }
         }
 
-        Sleep(5000);
-        perfData[q] = perf / 1000;
+        Sleep(sleep);
+        perfData[q] = 5 * perf / sleep;
         perf = 0;
         should_exit = true;
 
@@ -420,11 +431,10 @@ int main() {
     printf("\nAverage MFLOPS: %.2f\n", average);
     printf("Standard Deviation: %.2f MFLOPS (%.2f%%)\n", stdev, stdevPercent);
 
-    if(testCount <= 19) {  // Adjusted for the skipped run
-        printf("\nStability unverified, 20 runs minimum to verify stability!");
-    } else if (stdevPercent <= 1) {
+    
+    if (stdevPercent <= 1 && sleep > 5001) {
         printf("\nCongratulations! Your cpu overclock is officially stable!");
-    } else {
+    } else if (sleep > 50001) {
         printf("\nWomp Womp, your cpu overclock is UNSTABLE!");
     }
 
